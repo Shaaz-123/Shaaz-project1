@@ -1,1 +1,447 @@
-<p>Hello world!!</p>
+import React, { useState } from 'react';
+import { MapPin, Trash2, Lightbulb, Construction, Droplets, AlertTriangle, Home, Bug, TreeDeciduous, Users, Clock, CheckCircle, Menu, X, MessageCircle, Phone, Send, Upload, Activity, TrendingUp, Headphones } from 'lucide-react';
+
+const ComplaintApp = () => {
+  const [activeView, setActiveView] = useState('dashboard');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: 'agent', text: 'Hello Shaaz! How can I help you today?', time: '10:30 AM' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  
+  const [complaints, setComplaints] = useState([
+    { id: 1, type: 'Garbage', location: 'Banjara Hills', status: 'Pending', date: '2025-11-10', priority: 'High', images: [] },
+    { id: 2, type: 'Streetlight', location: 'Jubilee Hills', status: 'In Progress', date: '2025-11-09', priority: 'Medium', images: [] },
+    { id: 3, type: 'Pothole', location: 'Gachibowli', status: 'Resolved', date: '2025-11-08', priority: 'High', images: [] },
+    { id: 4, type: 'Drainage', location: 'Madhapur', status: 'Pending', date: '2025-11-10', priority: 'Critical', images: [] },
+    { id: 5, type: 'Mosquito', location: 'Kondapur', status: 'In Progress', date: '2025-11-09', priority: 'Medium', images: [] },
+  ]);
+
+  const [formData, setFormData] = useState({
+    type: '',
+    location: '',
+    description: '',
+    phone: '',
+    landmark: '',
+    images: []
+  });
+
+  const issueTypes = [
+    { icon: Trash2, name: 'Garbage Collection', color: 'from-green-500 to-emerald-600' },
+    { icon: Lightbulb, name: 'Streetlight Issues', color: 'from-yellow-500 to-orange-600' },
+    { icon: Construction, name: 'Road Damage', color: 'from-gray-500 to-slate-600' },
+    { icon: Droplets, name: 'Drainage Problems', color: 'from-blue-500 to-cyan-600' },
+    { icon: AlertTriangle, name: 'Illegal Construction', color: 'from-red-500 to-rose-600' },
+    { icon: Droplets, name: 'Stagnant Water', color: 'from-teal-500 to-emerald-600' },
+    { icon: Bug, name: 'Mosquito Menace', color: 'from-purple-500 to-pink-600' },
+    { icon: TreeDeciduous, name: 'Tree Issues', color: 'from-lime-500 to-green-600' },
+    { icon: Home, name: 'Public Toilets', color: 'from-indigo-500 to-blue-600' }
+  ];
+
+  const stats = {
+    total: complaints.length,
+    pending: complaints.filter(c => c.status === 'Pending').length,
+    inProgress: complaints.filter(c => c.status === 'In Progress').length,
+    resolved: complaints.filter(c => c.status === 'Resolved').length
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const imagePromises = files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(imagePromises).then(images => {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...images]
+      }));
+    });
+  };
+
+  const removeImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.type || !formData.location || !formData.description || !formData.phone) {
+      alert('Please fill all required fields');
+      return;
+    }
+    const newComplaint = {
+      id: complaints.length + 1,
+      type: formData.type,
+      location: formData.location,
+      status: 'Pending',
+      date: new Date().toISOString().split('T')[0],
+      priority: 'Medium',
+      images: formData.images
+    };
+    setComplaints([newComplaint, ...complaints]);
+    setFormData({ type: '', location: '', description: '', phone: '', landmark: '', images: [] });
+    setActiveView('dashboard');
+  };
+
+  const sendChatMessage = () => {
+    if (chatInput.trim() === '') return;
+    
+    const newMessage = {
+      sender: 'user',
+      text: chatInput,
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    setChatMessages([...chatMessages, newMessage]);
+    setChatInput('');
+
+    setTimeout(() => {
+      const responses = [
+        "Thank you for contacting us, Shaaz. I've noted your query.",
+        "I understand your concern. Let me check the details for you.",
+        "Your complaint has been registered. Our team will address it soon.",
+        "Is there anything else I can help you with today?"
+      ];
+      const agentMessage = {
+        sender: 'agent',
+        text: responses[Math.floor(Math.random() * responses.length)],
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      };
+      setChatMessages(prev => [...prev, agentMessage]);
+    }, 1000);
+  };
+
+  const makeCall = () => {
+    window.location.href = 'tel:04040606060';
+  };
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Pending': return 'bg-yellow-100 text-yellow-800';
+      case 'In Progress': return 'bg-blue-100 text-blue-800';
+      case 'Resolved': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch(priority) {
+      case 'Critical': return 'bg-red-500';
+      case 'High': return 'bg-orange-500';
+      case 'Medium': return 'bg-yellow-500';
+      default: return 'bg-green-500';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                <Home className="w-7 h-7 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">GHMC Complaint Portal</h1>
+                <p className="text-blue-100 text-sm">Greater Hyderabad Municipal Corporation</p>
+              </div>
+            </div>
+            
+            <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition">
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className={`lg:block ${menuOpen ? 'block' : 'hidden'} lg:w-64`}>
+            <nav className="bg-white rounded-2xl shadow-xl p-4 space-y-2">
+              <button onClick={() => {setActiveView('dashboard'); setMenuOpen(false);}} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition ${activeView === 'dashboard' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gray-100'}`}>
+                <Activity className="w-5 h-5" />
+                <span className="font-medium">Dashboard</span>
+              </button>
+              <button onClick={() => {setActiveView('file'); setMenuOpen(false);}} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition ${activeView === 'file' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gray-100'}`}>
+                <AlertTriangle className="w-5 h-5" />
+                <span className="font-medium">File Complaint</span>
+              </button>
+              <button onClick={() => {setActiveView('my-complaints'); setMenuOpen(false);}} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition ${activeView === 'my-complaints' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gray-100'}`}>
+                <Users className="w-5 h-5" />
+                <span className="font-medium">My Complaints</span>
+              </button>
+              <button onClick={() => {setActiveView('support'); setMenuOpen(false);}} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition ${activeView === 'support' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-700 hover:bg-gray-100'}`}>
+                <Headphones className="w-5 h-5" />
+                <span className="font-medium">Customer Support</span>
+              </button>
+            </nav>
+          </aside>
+
+          <main className="flex-1">
+            {activeView === 'dashboard' && (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-xl">
+                  <h2 className="text-3xl font-bold mb-2">Welcome back, Shaaz! 👋</h2>
+                  <p className="text-blue-100">Here's an overview of all civic issues in your area</p>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl">
+                    <p className="text-blue-100 text-sm font-medium">Total Issues</p>
+                    <h3 className="text-3xl font-bold mt-2">{stats.total}</h3>
+                  </div>
+                  <div className="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl p-6 text-white shadow-xl">
+                    <p className="text-yellow-100 text-sm font-medium">Pending</p>
+                    <h3 className="text-3xl font-bold mt-2">{stats.pending}</h3>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
+                    <p className="text-purple-100 text-sm font-medium">In Progress</p>
+                    <h3 className="text-3xl font-bold mt-2">{stats.inProgress}</h3>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-xl">
+                    <p className="text-green-100 text-sm font-medium">Resolved</p>
+                    <h3 className="text-3xl font-bold mt-2">{stats.resolved}</h3>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-xl p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Recent Complaints</h2>
+                    <button onClick={() => setActiveView('my-complaints')} className="text-blue-600 font-medium hover:text-blue-700 transition">View All</button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {complaints.slice(0, 5).map((complaint) => (
+                      <div key={complaint.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-2 h-12 rounded-full ${getPriorityColor(complaint.priority)}`}></div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800">{complaint.type}</h3>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+                              <MapPin className="w-4 h-4" />
+                              <span>{complaint.location}</span>
+                              <span>•</span>
+                              <span>{complaint.date}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(complaint.status)}`}>{complaint.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeView === 'file' && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-8">File a New Complaint</h2>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                  {issueTypes.map((issue) => {
+                    const Icon = issue.icon;
+                    return (
+                      <button key={issue.name} type="button" onClick={() => setFormData({...formData, type: issue.name})} className={`p-6 rounded-2xl border-2 transition-all ${formData.type === issue.name ? 'border-blue-500 bg-blue-50 shadow-lg scale-105' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}`}>
+                        <div className={`w-14 h-14 bg-gradient-to-br ${issue.color} rounded-xl flex items-center justify-center mb-3 mx-auto`}>
+                          <Icon className="w-8 h-8 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-700 text-center">{issue.name}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Location *</label>
+                    <input type="text" required value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Enter area/locality" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Landmark</label>
+                    <input type="text" value={formData.landmark} onChange={(e) => setFormData({...formData, landmark: e.target.value})} placeholder="Nearby landmark" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
+                    <textarea required value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Describe the issue in detail" rows="4" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"></textarea>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                    <input type="tel" required value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="Your contact number" className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Photos</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition">
+                      <input type="file" id="imageUpload" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                      <label htmlFor="imageUpload" className="cursor-pointer">
+                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Upload className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="text-gray-600 font-medium">Click to upload images</p>
+                        <p className="text-sm text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+                      </label>
+                    </div>
+
+                    {formData.images.length > 0 && (
+                      <div className="grid grid-cols-3 gap-4 mt-4">
+                        {formData.images.map((img, index) => (
+                          <div key={index} className="relative group">
+                            <img src={img} alt={`Upload ${index + 1}`} className="rounded-lg w-full h-32 object-cover" />
+                            <button type="button" onClick={() => removeImage(index)} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <button type="button" onClick={handleSubmit} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition shadow-lg hover:shadow-xl">
+                    Submit Complaint
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeView === 'my-complaints' && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">My Complaints</h2>
+                
+                <div className="space-y-4">
+                  {complaints.map((complaint) => (
+                    <div key={complaint.id} className="border-2 border-gray-200 rounded-xl p-6 hover:border-blue-300 transition">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">{complaint.type}</h3>
+                          <div className="flex items-center space-x-2 text-gray-500 mt-2">
+                            <MapPin className="w-4 h-4" />
+                            <span className="text-sm">{complaint.location}</span>
+                          </div>
+                        </div>
+                        <div className={`w-3 h-3 rounded-full ${getPriorityColor(complaint.priority)}`}></div>
+                      </div>
+                      
+                      {complaint.images && complaint.images.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2 mb-4">
+                          {complaint.images.map((img, idx) => (
+                            <img key={idx} src={img} alt={`Complaint ${idx + 1}`} className="w-full h-20 object-cover rounded-lg" />
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Filed on {complaint.date}</span>
+                        <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(complaint.status)}`}>{complaint.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeView === 'support' && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">Customer Support</h2>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <button onClick={() => setChatOpen(true)} className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-8 rounded-2xl hover:shadow-2xl transition transform hover:scale-105">
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageCircle className="w-10 h-10" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">Chat with Us</h3>
+                    <p className="text-blue-100">Get instant support via chat</p>
+                  </button>
+
+                  <button onClick={makeCall} className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-8 rounded-2xl hover:shadow-2xl transition transform hover:scale-105">
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Phone className="w-10 h-10" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">Call Us</h3>
+                    <p className="text-green-100">040-4060-6060</p>
+                  </button>
+                </div>
+
+                <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Working Hours</h3>
+                  <div className="space-y-2 text-gray-600">
+                    <p><strong>Monday - Friday:</strong> 9:00 AM - 6:00 PM</p>
+                    <p><strong>Saturday:</strong> 9:00 AM - 2:00 PM</p>
+                    <p><strong>Sunday:</strong> Closed</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6">
+                  <div className="flex items-start space-x-3">
+                    <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-bold text-yellow-800 mb-1">Emergency Services</h4>
+                      <p className="text-sm text-yellow-700">For urgent issues, please call our 24/7 emergency helpline: <strong>100</strong></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+
+      {chatOpen && (
+        <div className="fixed bottom-4 right-4 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col z-50">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold">Customer Support</h3>
+                <p className="text-xs text-blue-100">Online</p>
+              </div>
+            </div>
+            <button onClick={() => setChatOpen(false)} className="hover:bg-white/10 p-2 rounded-lg transition">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[70%] px-4 py-2 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
+                  <p className="text-sm">{msg.text}</p>
+                  <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>{msg.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-4 border-t">
+            <div className="flex space-x-2">
+              <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()} placeholder="Type your message..." className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" />
+              <button onClick={sendChatMessage} className="bg-blue-600 text-white p-2 rounded-xl hover:bg-blue-700 transition">
+                <Send className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer className="bg-gray-800 text-white py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-gray-400">© 2025 GHMC - Greater Hyderabad Municipal Corporation. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default ComplaintApp;
